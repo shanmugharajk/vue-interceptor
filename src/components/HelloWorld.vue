@@ -5,16 +5,14 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
+import Vue from 'vue';
 
 export default Vue.extend({
-  name: "HelloWorld",
-  mounted() {
-    browser.runtime.sendMessage({});
-  },
+  name: 'HelloWorld',
+
   computed: {
     defaultText() {
-      return browser.i18n.getMessage("extName");
+      return browser.i18n?.getMessage('extName');
     }
   }
 });
