@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service build --mode development --watch",
     "serve:ui": "vue-cli-service serve",
+    "serve": "vue-cli-service build --mode development --watch",
     "build": "vue-cli-service build",
     "test:unit": "vue-cli-service test:unit",
     "lint": "vue-cli-service lint"
@@ -13,7 +13,8 @@
     "core-js": "^3.6.5",
     "vue": "^2.6.11",
     "vue-class-component": "^7.2.3",
-    "vue-property-decorator": "^8.4.2"
+    "vue-property-decorator": "^8.4.2",
+    "vuetify": "^2.2.11"
   },
   "devDependencies": {
     "@types/chrome": "0.0.122",
@@ -34,9 +35,12 @@
     "eslint-plugin-vue": "^6.2.2",
     "node-sass": "^4.12.0",
     "prettier": "^1.19.1",
+    "sass": "^1.19.0",
     "sass-loader": "^8.0.2",
     "typescript": "~3.9.3",
     "vue-cli-plugin-browser-extension": "~0.24.2",
-    "vue-template-compiler": "^2.6.11"
+    "vue-cli-plugin-vuetify": "~2.0.7",
+    "vue-template-compiler": "^2.6.11",
+    "vuetify-loader": "^1.3.0"
   }
 }
