@@ -3,7 +3,7 @@ module.exports = {
     options: {
       template: 'public/browser-extension.html',
       entry: './src/options/main.ts',
-      title: 'Options'
+      title: 'Interceptor'
     }
   },
   pluginOptions: {
