@@ -38,6 +38,7 @@
             <v-switch
               class="switch"
               v-model="item.isActive"
+              @change="handleActiveChange(item)"
               hide-details
               dense
             ></v-switch>
@@ -108,6 +109,11 @@ export default class App extends Vue {
   deleteItem(item: Rule) {
     this.showConfirmationDialog = true;
     this.itemToDelete = item;
+  }
+
+  async handleActiveChange(rule: Rule) {
+    await rulesRepository.upsert(rule);
+    await this.loadData();
   }
 
   async handleConfirm() {
