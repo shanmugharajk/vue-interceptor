@@ -15,8 +15,9 @@
 
       <v-card-text>
         <v-container>
-          <v-form id="newRule" ref="form" v-model="valid">
+          <v-form id="newRule" ref="form" v-model="valid" lazy-validation>
             <v-textarea
+              id="rules"
               v-model="data.rules"
               :rules="validationRules.rules"
               label="Rules"
@@ -24,29 +25,25 @@
               rows="10"
               outlined
               required
-              dense
             ></v-textarea>
 
             <v-text-field
-              v-model="data.ruleId"
-              :rules="validationRules.ruleIdRules"
-              label="RuleId"
+              v-model="data.id"
+              :rules="validationRules.id"
+              label="id"
               required
-              dense
             ></v-text-field>
 
             <v-select
               v-model="data.selectedRule"
+              :rules="validationRules.ruleTypeValidationRules"
               :items="ruleTypes"
-              :rules="[v => !!v || 'Select a rule type']"
               label="Rule type"
               required
-              dense
             ></v-select>
 
             <v-textarea
               v-model="data.description"
-              dense
               rows="1"
               label="Description"
             ></v-textarea>
@@ -64,50 +61,161 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component } from 'vue-property-decorator';
+import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
+import {
+  getRuleTypesLabelData,
+  getRuleLabelTextByType,
+  validateRules,
+  ruleTypesMap,
+  Rule,
+  sleep,
+  rulesRepository
+} from '@/libs';
+
+export type VForm = Vue & {
+  validate: () => boolean;
+  resetValidation: () => void;
+};
+
+type ValidationRule = (data?: string) => boolean | string;
+
+export interface FormData {
+  id: string;
+  selectedRule: string;
+  rules: string;
+  isActive: boolean;
+  description?: string;
+}
+
+interface ValidationRules {
+  id: ValidationRule[];
+  rules: ValidationRule[];
+  ruleTypeValidationRules: ValidationRule[];
+}
 
 @Component
 export default class RulesFormDialog extends Vue {
-  showDialog = false;
+  @Prop({ required: false }) ruleToEdit?: Rule;
+  @Prop({ required: true }) onSave?: () => void;
+
   dialogTitle = 'New Rule';
-  ruleTypes = ['Url Redirect', 'Modify Header'];
+
+  showDialog = false;
+
+  ruleTypes = getRuleTypesLabelData();
 
   valid = true;
 
-  data = {
-    ruleId: '',
-    selectedRule: undefined,
-    rules: [],
+  initialData = {
+    id: '',
+    selectedRule: '',
+    rules: '',
+    isActive: true,
     description: undefined
   };
 
-  // TODO: Update the validation rules
-  validationRules = {
-    ruleId: [(v?: string) => !!v || 'Name is required'],
+  data: FormData = { ...this.initialData };
 
-    rules: [
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (v?: any[]) => (!!v && v?.length > 0) || 'Please enter the valid rules'
-    ]
+  validationRules: ValidationRules = {
+    id: [],
+    rules: [],
+    ruleTypeValidationRules: []
   };
+
+  idValidationRules = [(v?: string) => !!v || 'Name is required'];
+
+  ruleTypeValidationRules = [(v?: string) => !!v || 'Select Rule type'];
+
+  rulesValidationRules = [
+    (v = '') => {
+      let rules;
+      const error = 'Please enter the valid rules';
+
+      try {
+        rules = JSON.parse(v);
+      } catch {
+        return error;
+      }
+
+      const isValid = validateRules(
+        ruleTypesMap[this.data.selectedRule],
+        rules
+      );
+
+      if (!isValid) {
+        return error;
+      }
+
+      return true;
+    }
+  ];
+
+  @Watch('ruleToEdit')
+  updateRuleToEdit(ruleToEdit: Rule) {
+    this.data.id = ruleToEdit.id;
+    this.data.description = ruleToEdit.description;
+    this.data.isActive = ruleToEdit.isActive;
+    this.data.rules = JSON.stringify(ruleToEdit.rules);
+    this.data.selectedRule = getRuleLabelTextByType(ruleToEdit.ruleType) ?? '';
+
+    this.showDialog = true;
+  }
+
+  @Watch('showDialog')
+  resetValidation() {
+    if (!this.showDialog) {
+      (this.$refs.form as VForm).resetValidation();
+      this.data = { ...this.initialData };
+    }
+  }
 
   closeDialog() {
     this.showDialog = false;
   }
 
   handleClose() {
+    this.resetValidation();
     this.closeDialog();
   }
 
-  handleSave() {
-    // TODO: Save the rule.
+  async validate() {
+    this.validationRules.id = this.idValidationRules;
+    this.validationRules.rules = this.rulesValidationRules;
+    this.validationRules.ruleTypeValidationRules = this.ruleTypeValidationRules;
+
+    // Hack: Otherwise the .validate() is not working for the first time.
+    await sleep();
+
+    return (this.$refs.form as VForm).validate();
+  }
+
+  async handleSave() {
+    const isValid = await this.validate();
+    if (!isValid) {
+      return;
+    }
+
+    try {
+      await rulesRepository.upsert({
+        id: this.data.id,
+        description: this.data.description,
+        ruleType: ruleTypesMap[this.data.selectedRule],
+        ruleTypeLableText: this.data.selectedRule,
+        rules: JSON.parse(this.data.rules),
+        isActive: true
+      });
+      this.onSave && this.onSave();
+    } catch (error) {
+      console.log(error);
+    }
+
     this.closeDialog();
   }
 }
 </script>
 
 <style lang="scss">
-#newRule textarea {
+#rules {
   font-size: 13px;
   line-height: 1;
   padding: 10px;

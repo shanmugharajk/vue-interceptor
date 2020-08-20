@@ -8,5 +8,5 @@ export type Rule = _Rule;
 export type Redirect = _Redirect;
 export type ModifyHeader = _ModifyHeader;
 
-export { RuleType, Rules } from './types';
+export * from './types';
 export { rulesRepository } from './rules-repository';

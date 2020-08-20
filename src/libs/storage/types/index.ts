@@ -21,6 +21,7 @@ export interface Rule {
   id: string;
   description?: string;
   ruleType: RuleType;
+  ruleTypeLableText: string;
   rules: Rules;
   isActive: boolean;
 }

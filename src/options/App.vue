@@ -10,6 +10,13 @@
 
     <v-main>
       <v-container fluid>
+        <!-- Dialog to show for delete rule -->
+        <ConfirmationDialog
+          :showDialog="showConfirmationDialog"
+          :onConfirm="handleConfirm"
+          :onCancel="handleCancel"
+        />
+
         <!-- Rules table -->
         <v-data-table
           :headers="headers"
@@ -21,7 +28,7 @@
             <v-toolbar flat>
               <v-toolbar-title>Interceptor Rules</v-toolbar-title>
               <v-spacer></v-spacer>
-              <RulesForm />
+              <RulesForm :rule-to-edit="ruleToEdit" :onSave="handleSave" />
             </v-toolbar>
           </template>
 
@@ -55,31 +62,65 @@
 
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator';
+import { rulesRepository, Rule } from '@/libs';
 import RulesForm from '@/options/components/RulesForm.vue';
+import ConfirmationDialog from '@/options/components/ConfirmationDialog.vue';
 
 @Component({
   components: {
-    RulesForm
+    RulesForm,
+    ConfirmationDialog
   }
 })
 export default class App extends Vue {
   headers = [
-    { text: 'Rule Id', sortable: false, value: 'ruleId' },
+    { text: 'Rule Id', sortable: false, value: 'id' },
     { text: 'Description', sortable: false, value: 'description' },
+    { text: 'Rule Type', sortable: false, value: 'ruleTypeLableText' },
     { text: 'Active', sortable: false, value: 'isActive' },
     { text: 'Actions', sortable: false, value: 'actions' }
   ];
 
-  rules = [];
+  rules: Rule[] = [];
 
-  // TODO: update edit
-  editItem(item: unknown) {
-    console.log(item);
+  ruleToEdit: Partial<Rule> = {};
+
+  itemToDelete?: Rule;
+
+  showConfirmationDialog = false;
+
+  mounted() {
+    this.loadData();
   }
 
-  // TODO: update delete
-  deleteItem(item: unknown) {
-    console.log(item);
+  async loadData() {
+    this.rules = await rulesRepository.fetchAll();
+  }
+
+  handleSave() {
+    this.loadData();
+  }
+
+  editItem(item: Rule) {
+    this.ruleToEdit = { ...item };
+  }
+
+  deleteItem(item: Rule) {
+    this.showConfirmationDialog = true;
+    this.itemToDelete = item;
+  }
+
+  async handleConfirm() {
+    if (this.itemToDelete?.id) {
+      await rulesRepository.deleteById(this.itemToDelete.id);
+    }
+    this.itemToDelete = undefined;
+    this.showConfirmationDialog = false;
+    await this.loadData();
+  }
+
+  handleCancel() {
+    this.showConfirmationDialog = false;
   }
 }
 </script>
