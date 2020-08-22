@@ -68,8 +68,7 @@ import {
   validateRules,
   ruleTypesMap,
   Rule,
-  sleep,
-  rulesRepository
+  sleep
 } from '@/libs';
 
 export type VForm = Vue & {
@@ -96,7 +95,7 @@ interface ValidationRules {
 @Component
 export default class RulesFormDialog extends Vue {
   @Prop({ required: false }) ruleToEdit?: Rule;
-  @Prop({ required: true }) onSave?: () => void;
+  @Prop({ required: true }) onSave?: (rule: Rule) => void;
 
   dialogTitle = 'New Rule';
 
@@ -155,7 +154,7 @@ export default class RulesFormDialog extends Vue {
     this.data.id = ruleToEdit.id;
     this.data.description = ruleToEdit.description;
     this.data.isActive = ruleToEdit.isActive;
-    this.data.rules = JSON.stringify(ruleToEdit.rules);
+    this.data.rules = JSON.stringify(ruleToEdit.rules, null, '\t');
     this.data.selectedRule = getRuleLabelTextByType(ruleToEdit.ruleType) ?? '';
 
     this.showDialog = true;
@@ -191,20 +190,19 @@ export default class RulesFormDialog extends Vue {
 
   async handleSave() {
     const isValid = await this.validate();
-    if (!isValid) {
+    if (!isValid || !this.onSave) {
       return;
     }
 
     try {
-      await rulesRepository.upsert({
+      this.onSave({
         id: this.data.id,
         description: this.data.description,
         ruleType: ruleTypesMap[this.data.selectedRule],
         ruleTypeLableText: this.data.selectedRule,
         rules: JSON.parse(this.data.rules),
-        isActive: true
+        isActive: this.data.isActive
       });
-      this.onSave && this.onSave();
     } catch (error) {
       console.log(error);
     }

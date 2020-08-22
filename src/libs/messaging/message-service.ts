@@ -17,15 +17,15 @@ class MessagingService {
   }
 
   saveRule(data: Rule) {
-    this.sendMessage({ action: Action.SAVE_RULE, data });
+    return this.sendMessage({ action: Action.SAVE_RULE, data });
   }
 
   deleteRule(data: Rule) {
-    this.sendMessage({ action: Action.DELETE_RULE, data });
+    return this.sendMessage({ action: Action.DELETE_RULE, data });
   }
 
   toggleStatus(data: Rule) {
-    this.sendMessage({ action: Action.TOGGLE_STATUS, data });
+    return this.sendMessage({ action: Action.TOGGLE_STATUS, data });
   }
 }
 

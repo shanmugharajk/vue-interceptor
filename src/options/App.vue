@@ -63,7 +63,7 @@
 
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator';
-import { rulesRepository, Rule } from '@/libs';
+import { messagingService, rulesRepository, Rule } from '@/libs';
 import RulesForm from '@/options/components/RulesForm.vue';
 import ConfirmationDialog from '@/options/components/ConfirmationDialog.vue';
 
@@ -98,7 +98,8 @@ export default class App extends Vue {
     this.rules = await rulesRepository.fetchAll();
   }
 
-  handleSave() {
+  async handleSave(rule: Rule) {
+    await messagingService.saveRule(rule);
     this.loadData();
   }
 
@@ -112,13 +113,15 @@ export default class App extends Vue {
   }
 
   async handleActiveChange(rule: Rule) {
-    await rulesRepository.upsert(rule);
+    const toSave = { ...rule };
+    toSave.isActive = false;
+    await messagingService.saveRule(toSave);
     await this.loadData();
   }
 
   async handleConfirm() {
     if (this.itemToDelete?.id) {
-      await rulesRepository.deleteById(this.itemToDelete.id);
+      await messagingService.deleteRule(this.itemToDelete);
     }
     this.itemToDelete = undefined;
     this.showConfirmationDialog = false;

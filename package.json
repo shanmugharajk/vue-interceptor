@@ -12,6 +12,7 @@
   "dependencies": {
     "core-js": "^3.6.5",
     "dexie": "^3.0.2",
+    "minimatch": "^3.0.4",
     "vue": "^2.6.11",
     "vue-class-component": "^7.2.3",
     "vue-property-decorator": "^8.4.2",
@@ -21,6 +22,7 @@
     "@types/chrome": "0.0.122",
     "@types/firefox-webext-browser": "^67.0.2",
     "@types/jest": "^24.0.19",
+    "@types/minimatch": "^3.0.3",
     "@typescript-eslint/eslint-plugin": "^2.33.0",
     "@typescript-eslint/parser": "^2.33.0",
     "@vue/cli-plugin-babel": "~4.5.0",

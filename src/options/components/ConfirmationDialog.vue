@@ -9,8 +9,10 @@
         >
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="green darken-1" text @click="onCancel">Cancel</v-btn>
-          <v-btn color="green darken-1" text @click="onConfirm">Confirm</v-btn>
+          <v-btn depressed small text @click="onCancel">Cancel</v-btn>
+          <v-btn depressed small color="primary" text @click="onConfirm"
+            >Confirm</v-btn
+          >
         </v-card-actions>
       </v-card>
     </v-dialog>
