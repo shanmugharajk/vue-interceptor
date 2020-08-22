@@ -1,3 +1,3 @@
-# vue-chrome-interceptor
+# vue-interceptor
 
-A simple chrome extension which helps in url redirection, modify request/response headers written vue with vuetify.
+A simple chrome/firefox extension which helps in url redirection, modify request/response headers written in vue with vuetify.

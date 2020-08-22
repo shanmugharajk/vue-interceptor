@@ -1,3 +1,3 @@
-browser.browserAction.onClicked.addListener(function() {
-  console.log('Hello from the background');
-});
+import { backgroundScript } from './background-script';
+
+backgroundScript.init();

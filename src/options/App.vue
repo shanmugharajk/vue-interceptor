@@ -5,7 +5,7 @@
       <v-app-bar-nav-icon>
         <div class="logo"><span>VI</span></div>
       </v-app-bar-nav-icon>
-      <v-toolbar-title>Vue Chrome Interceptor</v-toolbar-title>
+      <v-toolbar-title>Interceptor</v-toolbar-title>
     </v-app-bar>
 
     <v-main>
