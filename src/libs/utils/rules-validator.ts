@@ -1,8 +1,19 @@
+import { isEmpty } from './misc';
 import { Redirect, ModifyHeader, RuleType } from '../storage';
 
 const validateRedirectRules = function(rules: Redirect[]) {
   for (const rule of rules) {
-    if (!rule.from || !rule.to) {
+    if (!rule.url || !rule.to) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
+const validateModifyHeaderRules = function(rules: ModifyHeader[]) {
+  for (const rule of rules) {
+    if (!rule.url || isEmpty(rule.headers) || !rule.action) {
       return false;
     }
   }
@@ -14,13 +25,12 @@ export const validateRules = function(
   ruleType: RuleType,
   rules?: Redirect[] | ModifyHeader[] | undefined
 ) {
-  if (ruleType === RuleType.MODIFY_HEADERS) {
-    // TODO: Ignoring for now.
-    return true;
+  if (isEmpty(rules)) {
+    return false;
   }
 
-  if (!rules || rules.length === 0) {
-    return false;
+  if (ruleType === RuleType.MODIFY_HEADERS) {
+    return validateModifyHeaderRules(rules as ModifyHeader[]);
   }
 
   return validateRedirectRules(rules as Redirect[]);

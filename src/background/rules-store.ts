@@ -1,58 +1,51 @@
 import minimatch from 'minimatch';
-import { Rule, RuleType, Redirect } from '@/libs';
-import { RedirectRulesMap } from './types';
+import { ModifyHeader, Redirect, Rule, RuleType } from '@/libs';
+
 import { rulesRepository } from '../libs/storage/rules-repository';
 
-class RuleStore {
+interface RulesMap {
+  [url: string]: string | Omit<ModifyHeader, 'url'>;
+}
+
+class RulesStore {
   allRules: Rule[] = [];
-  redirectRulesMap: RedirectRulesMap = {};
+  rulesMap: RulesMap = {};
 
   async init() {
-    this.allRules = await this.fetchAll();
+    this.allRules = await rulesRepository.fetchAll();
+    this.allRules.forEach(this.updateRule);
+  }
 
-    this.allRules.forEach(rule => {
-      switch (rule.ruleType) {
-        case RuleType.REDIRECT:
-          this.updateRedirectRuleMap(rule);
-          break;
+  fetchRule<T extends string | ModifyHeader>(url: string) {
+    if (this.rulesMap[url]) {
+      this.rulesMap[url];
+    }
 
-        default:
-          break;
+    for (const key in this.rulesMap) {
+      const val = this.rulesMap[key];
+
+      if (minimatch(key, url)) {
+        return val as T;
       }
-    });
+    }
   }
 
-  async fetchAll() {
-    return await rulesRepository.fetchAll();
-  }
+  updateRule(ruleGroup: Rule) {
+    const { isActive, ruleType, rules } = ruleGroup;
 
-  updateRedirectRuleMap(rule: Rule) {
-    const rules = rule.rules as Redirect[];
-
-    if (rule.isActive) {
-      rules.forEach(redirectRule => {
-        this.redirectRulesMap[redirectRule.from] = redirectRule.to;
+    if (isActive) {
+      rules.forEach(({ url, ...rest }: Redirect | ModifyHeader) => {
+        this.rulesMap[url] =
+          ruleType === RuleType.REDIRECT
+            ? (rest as Redirect).to
+            : { ...(rest as ModifyHeader) };
       });
     } else {
-      rules.forEach(redirectRule => {
-        delete this.redirectRulesMap[redirectRule.from];
+      rules.forEach((rule: Redirect | ModifyHeader) => {
+        delete this.rulesMap[rule.url];
       });
-    }
-  }
-
-  fetchRedirectUrl(url: string) {
-    if (this.redirectRulesMap[url]) {
-      this.redirectRulesMap[url];
-    }
-
-    for (const fromUrl in this.redirectRulesMap) {
-      const toUrl = this.redirectRulesMap[fromUrl];
-
-      if (minimatch(fromUrl, url)) {
-        return toUrl;
-      }
     }
   }
 }
 
-export const ruleStore = new RuleStore();
+export const rulesStore = new RulesStore();

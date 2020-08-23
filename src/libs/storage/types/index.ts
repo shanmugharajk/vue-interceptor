@@ -6,15 +6,19 @@ export enum RuleType {
 export type Rules = Redirect[] | ModifyHeader[];
 
 export interface Redirect {
-  from: string;
+  url: string;
   to: string;
 }
 
+export type HeaderValues = { [key: string]: string | undefined };
+
+export type HeaderAction = 'add' | 'update' | 'remove';
+
 export interface ModifyHeader {
-  url: string;
-  key: string;
-  value: string | number;
+  headers: HeaderValues;
+  action: HeaderAction;
   isRequest: boolean;
+  url: string;
 }
 
 export interface Rule {

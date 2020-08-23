@@ -113,9 +113,7 @@ export default class App extends Vue {
   }
 
   async handleActiveChange(rule: Rule) {
-    const toSave = { ...rule };
-    toSave.isActive = false;
-    await messagingService.saveRule(toSave);
+    await messagingService.saveRule({ ...rule });
     await this.loadData();
   }
 

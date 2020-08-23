@@ -1,12 +1,13 @@
-import { Action, Message, RuleType, Rule, rulesRepository } from '@/libs';
-import { ruleStore } from './rules-store';
+import { Action, Message, ModifyHeader, Rule, rulesRepository } from '@/libs';
+import { rulesStore } from './rules-store';
 import { utils } from './utils';
+import { isEmpty } from '@/libs/utils';
 
 class BackgroundScript {
   init() {
     try {
       // Fetches all rules from the db and update the rule map.
-      ruleStore.init();
+      rulesStore.init();
 
       // Extensopn Icon click handler - Opens the options page in a new tab.
       browser.browserAction.onClicked.addListener(this.handleBrowserAction);
@@ -22,6 +23,24 @@ class BackgroundScript {
         },
         ['blocking']
       );
+
+      // This event is for modifying the request headers
+      chrome.webRequest.onBeforeSendHeaders.addListener(
+        this.handleBeforeSendHeaders,
+        {
+          urls: ['<all_urls>']
+        },
+        ['blocking', 'requestHeaders', 'extraHeaders']
+      );
+
+      // This event is for modifying the request headers
+      chrome.webRequest.onHeadersReceived.addListener(
+        this.handleHeadersReceived,
+        {
+          urls: ['<all_urls>']
+        },
+        ['blocking', 'requestHeaders', 'extraHeaders']
+      );
     } catch (error) {
       console.error(error);
     }
@@ -36,8 +55,22 @@ class BackgroundScript {
   private handleBeforeRequestCb = (
     details: chrome.webRequest.WebRequestBodyDetails
   ) => {
-    const redirectUrl = ruleStore.fetchRedirectUrl(details.url);
+    const redirectUrl = rulesStore.fetchRule<string>(details.url);
     return redirectUrl ? { redirectUrl } : {};
+  };
+
+  private handleBeforeSendHeaders = (
+    details: chrome.webRequest.WebRequestHeadersDetails
+  ) => {
+    // updated the actual headers with the stored values.
+    return { requestHeaders: this.modifyHeaders(details) };
+  };
+
+  private handleHeadersReceived = (
+    details: chrome.webRequest.WebRequestHeadersDetails
+  ) => {
+    // updated the actual headers with the stored values.
+    return { responseHeaders: this.modifyHeaders(details) };
   };
 
   private handleMessage = (
@@ -47,33 +80,72 @@ class BackgroundScript {
   ) => {
     const { data } = message;
 
-    switch (data.ruleType) {
-      case RuleType.REDIRECT:
-        this.handleRedirectRequest(message, data as Rule).then(() =>
-          sendResponse('successfully updated')
-        );
-        break;
-
-      default:
-        break;
-    }
+    // TODO: How to make async/await here?
+    this.updateStoreAndDb(message, data as Rule).then(() =>
+      sendResponse('successfully updated')
+    );
 
     // Need to return true for sendResponse to work.
     return true;
   };
 
   // Methods
-  private handleRedirectRequest = async (request: Message, rule: Rule) => {
+  private modifyHeaders = (
+    details: chrome.webRequest.WebRequestHeadersDetails
+  ) => {
+    const { requestHeaders, url } = details;
+    const val = rulesStore.fetchRule<ModifyHeader>(url);
+
+    if (isEmpty(val)) {
+      return;
+    }
+
+    const headersToUpdate = val?.headers;
+    const actualHeaders = requestHeaders ?? [];
+
+    const idx = (key: string) =>
+      actualHeaders.findIndex(
+        header => header.name?.toLowerCase() === key.toLowerCase()
+      );
+
+    if (val?.action === 'add') {
+      for (const key in headersToUpdate) {
+        actualHeaders.push({ name: key, value: headersToUpdate[key] });
+      }
+    }
+
+    if (val?.action === 'update') {
+      for (const key in headersToUpdate) {
+        const i = idx(key);
+        if (i !== -1) {
+          actualHeaders[i].value = headersToUpdate[key];
+        }
+      }
+    }
+
+    if (val?.action === 'remove') {
+      for (const key in headersToUpdate) {
+        const i = idx(key);
+        if (i !== -1) {
+          actualHeaders.splice(i, 1);
+        }
+      }
+    }
+
+    return actualHeaders;
+  };
+
+  private updateStoreAndDb = async (request: Message, rule: Rule) => {
     if (request.action === Action.SAVE_RULE) {
-      ruleStore.updateRedirectRuleMap(rule);
-      rulesRepository.upsert(rule);
+      rulesStore.updateRule(rule);
+      await rulesRepository.upsert(rule);
     }
 
     if (request.action === Action.DELETE_RULE) {
       const toDelete = { ...rule };
       toDelete.isActive = false;
-      ruleStore.updateRedirectRuleMap(toDelete);
-      rulesRepository.deleteById(rule.id);
+      rulesStore.updateRule(toDelete);
+      await rulesRepository.deleteById(rule.id);
     }
   };
 }
