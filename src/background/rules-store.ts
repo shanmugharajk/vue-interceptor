@@ -52,28 +52,55 @@ class RulesStore {
     const { isActive, ruleType, rules } = ruleGroup;
 
     if (isActive) {
-      rules.forEach(({ url, ...rest }: Redirect | ModifyHeader) => {
-        switch (ruleType) {
-          case RuleType.REDIRECT:
-            this.redirect[url] = (rest as Redirect).to;
-            break;
-
-          case RuleType.MODIFY_HEADERS:
-            if ((rest as ModifyHeader).isRequest) {
-              this.reqHeaders[url] = rest as ModifyHeader;
-            } else {
-              this.resHeaders[url] = rest as ModifyHeader;
-            }
-            break;
-
-          default:
-            break;
-        }
+      rules.forEach((rule: Redirect | ModifyHeader) => {
+        this.updateStore(ruleType, rule);
       });
     } else {
       rules.forEach((rule: Redirect | ModifyHeader) => {
-        delete this.redirect[rule.url];
+        this.deleteStore(ruleType, rule);
       });
+    }
+  };
+
+  private updateStore = (ruleType: RuleType, rule: Redirect | ModifyHeader) => {
+    const { url, ...rest } = rule;
+
+    switch (ruleType) {
+      case RuleType.REDIRECT:
+        this.redirect[url] = (rest as Redirect).to;
+        break;
+
+      case RuleType.MODIFY_HEADERS:
+        if ((rest as ModifyHeader).isRequest) {
+          this.reqHeaders[url] = rest as ModifyHeader;
+        } else {
+          this.resHeaders[url] = rest as ModifyHeader;
+        }
+        break;
+
+      default:
+        break;
+    }
+  };
+
+  private deleteStore = (ruleType: RuleType, rule: Redirect | ModifyHeader) => {
+    const { url, ...rest } = rule;
+
+    switch (ruleType) {
+      case RuleType.REDIRECT:
+        delete this.redirect[url];
+        break;
+
+      case RuleType.MODIFY_HEADERS:
+        if ((rest as ModifyHeader).isRequest) {
+          delete this.reqHeaders[url];
+        } else {
+          delete this.resHeaders[url];
+        }
+        break;
+
+      default:
+        break;
     }
   };
 }

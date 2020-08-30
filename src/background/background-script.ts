@@ -114,8 +114,6 @@ class BackgroundScript {
 
     if (val?.action === 'add') {
       for (const key in headersToUpdate) {
-        console.log(key);
-        console.log(headersToUpdate);
         actualHeaders.push({ name: key, value: headersToUpdate[key] });
       }
     }
