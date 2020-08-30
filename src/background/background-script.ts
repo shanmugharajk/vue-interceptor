@@ -1,4 +1,4 @@
-import { Action, Message, ModifyHeader, Rule, rulesRepository } from '@/libs';
+import { Action, Message, Rule, rulesRepository } from '@/libs';
 import { rulesStore } from './rules-store';
 import { utils } from './utils';
 import { isEmpty } from '@/libs/utils';
@@ -39,7 +39,7 @@ class BackgroundScript {
         {
           urls: ['<all_urls>']
         },
-        ['blocking', 'requestHeaders', 'extraHeaders']
+        ['blocking', 'responseHeaders', 'extraHeaders']
       );
     } catch (error) {
       console.error(error);
@@ -55,22 +55,26 @@ class BackgroundScript {
   private handleBeforeRequestCb = (
     details: chrome.webRequest.WebRequestBodyDetails
   ) => {
-    const redirectUrl = rulesStore.fetchRule<string>(details.url);
+    const redirectUrl = rulesStore.fetchRedirect(details.url);
     return redirectUrl ? { redirectUrl } : {};
   };
 
-  private handleBeforeSendHeaders = (
-    details: chrome.webRequest.WebRequestHeadersDetails
-  ) => {
+  private handleBeforeSendHeaders = ({
+    url,
+    requestHeaders
+  }: chrome.webRequest.WebRequestHeadersDetails) => {
     // updated the actual headers with the stored values.
-    return { requestHeaders: this.modifyHeaders(details) };
+    return { requestHeaders: this.modifyHeaders(url, requestHeaders ?? []) };
   };
 
-  private handleHeadersReceived = (
-    details: chrome.webRequest.WebRequestHeadersDetails
-  ) => {
+  private handleHeadersReceived = ({
+    url,
+    responseHeaders
+  }: chrome.webRequest.WebResponseHeadersDetails) => {
     // updated the actual headers with the stored values.
-    return { responseHeaders: this.modifyHeaders(details) };
+    return {
+      responseHeaders: this.modifyHeaders(url, responseHeaders ?? [], false)
+    };
   };
 
   private handleMessage = (
@@ -91,17 +95,17 @@ class BackgroundScript {
 
   // Methods
   private modifyHeaders = (
-    details: chrome.webRequest.WebRequestHeadersDetails
+    url: string,
+    actualHeaders: chrome.webRequest.HttpHeader[],
+    isRequest = true
   ) => {
-    const { requestHeaders, url } = details;
-    const val = rulesStore.fetchRule<ModifyHeader>(url);
+    const val = rulesStore.fetchHeader(url, isRequest);
 
     if (isEmpty(val)) {
       return;
     }
 
     const headersToUpdate = val?.headers;
-    const actualHeaders = requestHeaders ?? [];
 
     const idx = (key: string) =>
       actualHeaders.findIndex(
@@ -110,6 +114,8 @@ class BackgroundScript {
 
     if (val?.action === 'add') {
       for (const key in headersToUpdate) {
+        console.log(key);
+        console.log(headersToUpdate);
         actualHeaders.push({ name: key, value: headersToUpdate[key] });
       }
     }

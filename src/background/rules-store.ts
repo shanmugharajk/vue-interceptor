@@ -3,49 +3,79 @@ import { ModifyHeader, Redirect, Rule, RuleType } from '@/libs';
 
 import { rulesRepository } from '../libs/storage/rules-repository';
 
-interface RulesMap {
-  [url: string]: string | Omit<ModifyHeader, 'url'>;
-}
+type RedirectMap = Record<string, string>;
+
+type HeadersMap = Record<string, Omit<ModifyHeader, 'url'>>;
 
 class RulesStore {
   allRules: Rule[] = [];
-  rulesMap: RulesMap = {};
+  redirect: RedirectMap = {};
+  reqHeaders: HeadersMap = {};
+  resHeaders: HeadersMap = {};
 
   async init() {
     this.allRules = await rulesRepository.fetchAll();
     this.allRules.forEach(this.updateRule);
   }
 
-  fetchRule<T extends string | ModifyHeader>(url: string) {
-    if (this.rulesMap[url]) {
-      this.rulesMap[url];
+  fetchRedirect(url: string) {
+    if (this.redirect[url]) {
+      this.redirect[url];
     }
 
-    for (const key in this.rulesMap) {
-      const val = this.rulesMap[key];
+    for (const key in this.redirect) {
+      const val = this.redirect[key];
 
       if (minimatch(key, url)) {
-        return val as T;
+        return val;
       }
     }
   }
 
-  updateRule(ruleGroup: Rule) {
+  fetchHeader(url: string, isRequest = true) {
+    const lookUp = isRequest ? this.reqHeaders : this.resHeaders;
+
+    if (lookUp[url]) {
+      lookUp[url];
+    }
+
+    for (const key in lookUp) {
+      const val = lookUp[key];
+
+      if (minimatch(key, url)) {
+        return val;
+      }
+    }
+  }
+
+  updateRule = (ruleGroup: Rule) => {
     const { isActive, ruleType, rules } = ruleGroup;
 
     if (isActive) {
       rules.forEach(({ url, ...rest }: Redirect | ModifyHeader) => {
-        this.rulesMap[url] =
-          ruleType === RuleType.REDIRECT
-            ? (rest as Redirect).to
-            : { ...(rest as ModifyHeader) };
+        switch (ruleType) {
+          case RuleType.REDIRECT:
+            this.redirect[url] = (rest as Redirect).to;
+            break;
+
+          case RuleType.MODIFY_HEADERS:
+            if ((rest as ModifyHeader).isRequest) {
+              this.reqHeaders[url] = rest as ModifyHeader;
+            } else {
+              this.resHeaders[url] = rest as ModifyHeader;
+            }
+            break;
+
+          default:
+            break;
+        }
       });
     } else {
       rules.forEach((rule: Redirect | ModifyHeader) => {
-        delete this.rulesMap[rule.url];
+        delete this.redirect[rule.url];
       });
     }
-  }
+  };
 }
 
 export const rulesStore = new RulesStore();
