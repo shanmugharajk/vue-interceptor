@@ -1,13 +1,12 @@
-import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
-import Home from "@/home/Home.vue";
+import { createRouter, createMemoryHistory, RouteRecordRaw } from "vue-router";
 import ModifyHeaders from "@/modify-headers/ModifyHeaders.vue";
 import RedirectUrl from "@/redirect-url/RedirectUrl.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
-    path: "/options.html",
+    path: "/",
     name: "Home",
-    component: Home,
+    component: RedirectUrl,
   },
   {
     path: "/redirect-url",
@@ -22,7 +21,7 @@ const routes: Array<RouteRecordRaw> = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(process.env.BASE_URL),
+  history: createMemoryHistory("/options.html"),
   routes,
 });
 

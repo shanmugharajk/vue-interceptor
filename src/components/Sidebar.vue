@@ -1,13 +1,23 @@
 <template>
   <section class="w-28 min-h-screen text-center text-gray-200 bg-indigo-900">
     <logo class="mb-8" />
-
-    <button class="btn btn-icon" @click="updateView('redirect-url')">
+    <button
+      class="btn btn-icon"
+      :class="{
+        'bg-hover':
+          currentRoute.path == '/redirect-url' || currentRoute.path == '/',
+      }"
+      @click="updateView('redirect-url')"
+    >
       <refresh-icon class="text-indigo-400" />
       <span class="text-indigo-200 mb-2">Redirect</span>
     </button>
 
-    <button class="btn btn-icon" @click="updateView('modify-headers')">
+    <button
+      class="btn btn-icon"
+      :class="{ 'bg-hover': currentRoute.path == '/modify-headers' }"
+      @click="updateView('modify-headers')"
+    >
       <view-grid-icon class="text-indigo-400" />
       <span class="text-indigo-200 mb-2">Headers</span>
     </button>
@@ -31,11 +41,12 @@ export default defineComponent({
     const router = useRouter();
 
     function updateView(viewName: string) {
-      router.push(viewName);
+      router.push(`options.html/${viewName}`);
     }
 
     return {
       updateView,
+      currentRoute: router.currentRoute,
     };
   },
 });

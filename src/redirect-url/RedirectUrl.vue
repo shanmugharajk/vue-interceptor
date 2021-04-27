@@ -1,4 +1,4 @@
-<template>RedirRedirectUrl</template>
+<template>RedirectUrl</template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
