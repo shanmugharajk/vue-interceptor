@@ -3,14 +3,14 @@ module.exports = {
     options: {
       template: "public/browser-extension.html",
       entry: "./src/options/main.ts",
-      title: "Options",
+      title: "Interceptor",
     },
   },
   pluginOptions: {
     browserExtension: {
       componentOptions: {
         background: {
-          entry: "src/background.ts",
+          entry: "src/background/index.ts",
         },
       },
     },
