@@ -1,27 +1,17 @@
 <template>
   <div>
-    <p>{{ defaultText }}</p>
+    <sidebar />
   </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted } from "vue";
+import { defineComponent } from "vue";
+import Sidebar from "@/components/Sidebar.vue";
 
 export default defineComponent({
+  components: {
+    Sidebar,
+  },
   name: "Home",
-  props: {
-    msg: String,
-  },
-  setup() {
-    onMounted(function () {
-      browser.runtime.sendMessage({});
-    });
-
-    const defaultText = computed(() => {
-      return browser.i18n.getMessage("extName");
-    });
-
-    return { defaultText };
-  },
 });
 </script>
