@@ -1,8 +1,8 @@
 <template>
-  <section class="w-28 min-h-screen text-center text-gray-200 bg-indigo-900">
+  <section class="w-25 min-h-screen text-center text-gray-200 bg-indigo-900">
     <logo class="mb-8" />
     <button
-      class="btn btn-icon"
+      class="btn btn-icon flex-col m-2 mb-5"
       :class="{
         'bg-hover':
           currentRoute.path == '/redirect-url' || currentRoute.path == '/',
@@ -14,7 +14,7 @@
     </button>
 
     <button
-      class="btn btn-icon"
+      class="btn btn-icon flex-col m-2 mb-5"
       :class="{ 'bg-hover': currentRoute.path == '/modify-headers' }"
       @click="updateView('modify-headers')"
     >

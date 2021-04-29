@@ -1,6 +1,6 @@
 import { createRouter, createMemoryHistory, RouteRecordRaw } from "vue-router";
-import ModifyHeaders from "@/modify-headers/ModifyHeaders.vue";
-import RedirectUrl from "@/redirect-url/RedirectUrl.vue";
+import ModifyHeaders from "@/options/modify-headers/ModifyHeaders.vue";
+import RedirectUrl from "@/options/redirect-url/RedirectUrl.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {

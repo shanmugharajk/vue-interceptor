@@ -7,6 +7,9 @@ module.exports = {
       colors: {
         hover: "#2b2a63",
       },
+      width: {
+        25: "6.5rem",
+      },
       borderWidth: {
         1: "border-width: 1px",
       },
