@@ -11,8 +11,8 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { PlusCircleIcon } from "@/options/components/icons";
-import RulesList from "@/options/rules-list/RulesList.vue";
+import { PlusCircleIcon } from "~/options/components/icons";
+import RulesList from "~/options/rules-list/RulesList.vue";
 
 export default defineComponent({
   name: "RedirectUrl",

@@ -1,3 +1,5 @@
+const path = require("path");
+
 module.exports = {
   pages: {
     options: {
@@ -12,6 +14,13 @@ module.exports = {
         background: {
           entry: "src/background/index.ts",
         },
+      },
+    },
+  },
+  configureWebpack: {
+    resolve: {
+      alias: {
+        "~": path.join(__dirname, "/src"),
       },
     },
   },
