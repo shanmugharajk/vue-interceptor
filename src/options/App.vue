@@ -1,7 +1,7 @@
 <template>
   <div class="flex">
     <sidebar />
-    <router-view></router-view>
+    <router-view class="flex-auto"></router-view>
   </div>
 </template>
 
