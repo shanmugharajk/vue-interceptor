@@ -1,6 +1,6 @@
 <template>
   <section class="paper mx-3 mt-2">
-    <div class="flex items-center py-3 border-b border-gray-300">
+    <div class="flex items-center py-3 border-b border-gray-200">
       <h1 class="text-xl flex-1 ml-4">Add new rule</h1>
       <switch-button class="mr-2" />
       <button class="btn btn-primary mr-2">Save Rule</button>
@@ -25,7 +25,16 @@
 
       <!-- urls section -->
       <div>
-        <span class="inline-block text-sm mb-1 text-gray-600">Urls</span>
+        <!-- title + add rule -->
+        <div class="flex justify-between">
+          <span class="inline-block text-sm my-2 text-gray-600">Urls</span>
+          <button class="btn-icon btn-min">
+            <plus-circle-icon class="w-4 h-4 mr-1" />
+            Add rule
+          </button>
+        </div>
+        <!-- title + add rule -->
+
         <div class="mt-1 flex mb-1">
           <label
             class="w-16 inline-flex items-center px-3 rounded-l border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm"
@@ -66,10 +75,12 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import SwitchButton from "~/options/components/SwitchButton.vue";
+import { PlusCircleIcon } from "~/options/components/icons";
 
 export default defineComponent({
   components: {
     SwitchButton,
+    PlusCircleIcon,
   },
   name: "AddNewRule",
 });

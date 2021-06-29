@@ -12,7 +12,7 @@
       <rules-list />
     </section>
 
-    <add-new-rule v-if="showAddNewRule" class="flex-1">Add new</add-new-rule>
+    <rule-form v-if="showAddNewRule" class="flex-1">Add new</rule-form>
   </div>
 </template>
 
@@ -21,12 +21,12 @@ import { defineComponent, ref } from "vue";
 import { PlusCircleIcon } from "~/options/components/icons";
 import RulesList from "~/options/rules-list/RulesList.vue";
 
-import AddNewRule from "./AddNewRule.vue";
+import RuleForm from "./RuleForm.vue";
 
 export default defineComponent({
   name: "RedirectUrl",
   components: {
-    AddNewRule,
+    RuleForm,
     PlusCircleIcon,
     RulesList,
   },
